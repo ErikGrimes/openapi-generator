@@ -284,8 +284,8 @@ public class SpringCodegen extends AbstractJavaCodegen
             this.setReturnSuccessCode(Boolean.valueOf(additionalProperties.get(RETURN_SUCCESS_CODE).toString()));
         }
 
-        typeMapping.put("file", "Resource");
-        importMapping.put("Resource", "org.springframework.core.io.Resource");
+        typeMapping.put("file", "org.springframework.core.io.Resource");
+        importMapping.put("org.springframework.core.io.Resource", "org.springframework.core.io.Resource");
 
         if (useOptional) {
             writePropertyBack(USE_OPTIONAL, useOptional);

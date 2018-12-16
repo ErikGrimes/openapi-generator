@@ -425,7 +425,7 @@ public class DefaultCodegenTest {
 
     @Test
     public void testDiscriminator() {
-        final OpenAPI openAPI = new OpenAPIParser().readLocation("src/test/resources/2_0/petstore-with-fake-endpoints-models-for-testing.yaml", null, new ParseOptions()).getOpenAPI();
+        final OpenAPI openAPI = new OpenAPIParser().readLocation("src/test/resources/3_0/issue1685.yaml", null, new ParseOptions()).getOpenAPI();
         DefaultCodegen codegen = new DefaultCodegen();
 
         Schema animal = openAPI.getComponents().getSchemas().get("Animal");
@@ -435,8 +435,26 @@ public class DefaultCodegenTest {
         test.setPropertyName("className");
         test.getMappedModels().add(new CodegenDiscriminator.MappedModel("Dog", "Dog"));
         test.getMappedModels().add(new CodegenDiscriminator.MappedModel("Cat", "Cat"));
+        test.getMappedModels().add(new CodegenDiscriminator.MappedModel("BigDog", "BigDog"));
         Assert.assertEquals(discriminator, test);
     }
+
+    @Test
+    public void testDiscriminatorWithAbstractSubtypes() {
+        final OpenAPI openAPI = new OpenAPIParser().readLocation("src/test/resources/3_0/issue1685.yaml", null, new ParseOptions()).getOpenAPI();
+        DefaultCodegen codegen = new DefaultCodegen();
+        codegen.abstractModels().add("Dog");
+
+        Schema animal = openAPI.getComponents().getSchemas().get("Animal");
+        CodegenModel animalModel = codegen.fromModel("Animal", animal, openAPI.getComponents().getSchemas());
+        CodegenDiscriminator discriminator = animalModel.getDiscriminator();
+        CodegenDiscriminator test = new CodegenDiscriminator();
+        test.setPropertyName("className");
+        test.getMappedModels().add(new CodegenDiscriminator.MappedModel("Cat", "Cat"));
+        test.getMappedModels().add(new CodegenDiscriminator.MappedModel("BigDog", "BigDog"));
+        Assert.assertEquals(discriminator, test);
+    }
+
 
     @Test
     public void testDiscriminatorWithCustomMapping() {

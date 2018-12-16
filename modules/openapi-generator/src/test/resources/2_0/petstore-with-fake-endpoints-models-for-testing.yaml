@@ -1239,6 +1239,14 @@ definitions:
         properties:
           breed:
             type: string
+  BigDog:
+    allOf:
+      - $ref: '#/definitions/Dog'
+      - type: object
+        properties:
+          weight:
+            type: number
+            format: int32
   Cat:
     allOf:
       - $ref: '#/definitions/Animal'

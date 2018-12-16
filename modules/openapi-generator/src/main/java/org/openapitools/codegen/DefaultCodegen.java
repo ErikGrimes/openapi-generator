@@ -60,28 +60,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.openapitools.codegen.utils.StringUtils.camelize;
-import static org.openapitools.codegen.utils.StringUtils.underscore;
 import static org.openapitools.codegen.utils.StringUtils.escape;
 
 public class DefaultCodegen implements CodegenConfig {
@@ -140,6 +126,7 @@ public class DefaultCodegen implements CodegenConfig {
     // make openapi and schemas available to all methods
     protected OpenAPI globalOpenAPI;
     protected Map<String, Schema> globalSchemas;
+    protected Set<String> abstractModels = new HashSet<>();
 
     public List<CliOption> cliOptions() {
         return cliOptions;
@@ -206,7 +193,13 @@ public class DefaultCodegen implements CodegenConfig {
             this.setEnablePostProcessFile(Boolean.valueOf(additionalProperties
                     .get(CodegenConstants.ENABLE_POST_PROCESS_FILE).toString()));
         }
+
+        if(additionalProperties.containsKey(CodegenConstants.ABSTRACT_MODELS)){
+            this.abstractModels().addAll(convertListPropertyToSet(CodegenConstants.ABSTRACT_MODELS));
+        }
+
     }
+
 
     // override with any special post-processing for all models
     @SuppressWarnings({"static-method", "unchecked"})
@@ -549,6 +542,10 @@ public class DefaultCodegen implements CodegenConfig {
 
     public Set<String> languageSpecificPrimitives() {
         return languageSpecificPrimitives;
+    }
+
+    public Set<String> abstractModels() {
+        return this.abstractModels;
     }
 
     public Map<String, String> importMapping() {
@@ -1733,18 +1730,29 @@ public class DefaultCodegen implements CodegenConfig {
             }
         } else {
             allDefinitions.forEach((childName, child) -> {
-                if (child instanceof ComposedSchema && ((ComposedSchema) child).getAllOf() != null) {
-                    Set<String> parentSchemas = ((ComposedSchema) child).getAllOf().stream()
-                            .filter(s -> s.get$ref() != null)
-                            .map(s -> ModelUtils.getSimpleRef(s.get$ref()))
-                            .collect(Collectors.toSet());
-                    if (parentSchemas.contains(schemaName)) {
-                        discriminator.getMappedModels().add(new MappedModel(childName, childName));
-                    }
+                if(childName.equals(schemaName) || abstractModels.contains(childName)) return;
+                if(getLineage(childName,child, allDefinitions).contains(schemaName)){
+                    discriminator.getMappedModels().add(new MappedModel(childName, childName));
                 }
             });
         }
         return discriminator;
+    }
+
+    private Set<String> getLineage(String childName, Schema child, Map<String, Schema> allDefinitions) {
+        Set<String> lineage = new HashSet<>();
+        lineage.add(childName);
+        if (child instanceof ComposedSchema && ((ComposedSchema) child).getAllOf() != null){
+            Set<String> parentLineage = ((ComposedSchema) child).getAllOf().stream()
+                    .filter(s -> s.get$ref() != null)
+                    .map(s -> ModelUtils.getSimpleRef(s.get$ref()))
+                    .collect(Collectors.toSet());
+            parentLineage.stream().map(parentSchemaName -> getLineage(parentSchemaName, allDefinitions.get(parentSchemaName), allDefinitions))
+                    .forEach(lineage::addAll);
+
+        }
+        return lineage;
+
     }
 
     protected void addAdditionPropertiesToCodeGenModel(CodegenModel codegenModel, Schema schema) {
@@ -4104,6 +4112,11 @@ public class DefaultCodegen implements CodegenConfig {
 
         return booleanValue;
     }
+
+    public Set<String> convertListPropertyToSet(String propertyKey) {
+        return new HashSet<>(Arrays.asList(additionalProperties.get(propertyKey).toString().split(",")));
+    }
+
 
     public void writePropertyBack(String propertyKey, boolean value) {
         additionalProperties.put(propertyKey, value);

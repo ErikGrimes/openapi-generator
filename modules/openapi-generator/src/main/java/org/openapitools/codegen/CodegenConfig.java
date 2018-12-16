@@ -143,6 +143,8 @@ public interface CodegenConfig {
 
     Set<String> languageSpecificPrimitives();
 
+    Set<String> abstractModels();
+
     Map<String, String> reservedWordsMappings();
 
     void preprocessOpenAPI(OpenAPI openAPI);

@@ -45,6 +45,9 @@ public class CodegenConstants {
     public static final String ALLOW_UNICODE_IDENTIFIERS = "allowUnicodeIdentifiers";
     public static final String ALLOW_UNICODE_IDENTIFIERS_DESC = "boolean, toggles whether unicode identifiers are allowed in names or not, default is false";
 
+    public static final String ABSTRACT_MODELS = "abstractModels";
+    public static final String ABSTRACT_MODELS_DESC = "comma separated list, identifies models that are never instantiated in an inheritance hierarchy";
+
     public static final String INVOKER_PACKAGE = "invokerPackage";
     public static final String INVOKER_PACKAGE_DESC = "root package for generated code";
 

@@ -19,10 +19,10 @@ package org.openapitools.codegen.java;
 
 import io.swagger.parser.OpenAPIParser;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.parser.core.models.ParseOptions;
 
-import org.openapitools.codegen.CodegenConstants;
-import org.openapitools.codegen.CodegenType;
+import org.openapitools.codegen.*;
 import org.openapitools.codegen.languages.AbstractJavaCodegen;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -155,6 +155,23 @@ public class AbstractJavaCodegenTest {
         Assert.assertEquals(codegen.toEnumValue("1337", "Long"), "1337l");
         Assert.assertEquals(codegen.toEnumValue("3.14", "Float"), "3.14f");
     }
+
+    @Test
+    public void testDiscriminatorWithUnderscoreInModelName(){
+        final OpenAPI openAPI = new OpenAPIParser().readLocation("src/test/resources/2_0/discriminatorWithUnderscoreInModelNameIssueTest.yaml", null, new ParseOptions()).getOpenAPI();
+        AbstractJavaCodegen codegen = new P_AbstractJavaCodegen();
+
+        Schema animal = openAPI.getComponents().getSchemas().get("Animal");
+        CodegenModel animalModel = codegen.fromModel("Animal", animal, openAPI.getComponents().getSchemas());
+        CodegenDiscriminator discriminator = animalModel.getDiscriminator();
+        CodegenDiscriminator test = new CodegenDiscriminator();
+        test.setPropertyName("className");
+        test.getMappedModels().add(new CodegenDiscriminator.MappedModel("Cat_Animal", "CatAnimal"));
+        test.getMappedModels().add(new CodegenDiscriminator.MappedModel("Dog_Animal", "DogAnimal"));
+        Assert.assertEquals(discriminator, test);
+    }
+
+
 
     private static class P_AbstractJavaCodegen extends AbstractJavaCodegen {
         @Override

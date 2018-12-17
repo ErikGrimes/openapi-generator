@@ -1726,13 +1726,13 @@ public class DefaultCodegen implements CodegenConfig {
         if (schema.getDiscriminator().getMapping() != null && !schema.getDiscriminator().getMapping().isEmpty()) {
             for (Entry<String, String> e : schema.getDiscriminator().getMapping().entrySet()) {
                 String name = ModelUtils.getSimpleRef(e.getValue());
-                discriminator.getMappedModels().add(new MappedModel(e.getKey(), name));
+                discriminator.getMappedModels().add(new MappedModel(e.getKey(), toModelName(name)));
             }
         } else {
             allDefinitions.forEach((childName, child) -> {
                 if(childName.equals(schemaName) || abstractModels.contains(childName)) return;
                 if(getLineage(childName,child, allDefinitions).contains(schemaName)){
-                    discriminator.getMappedModels().add(new MappedModel(childName, childName));
+                    discriminator.getMappedModels().add(new MappedModel(childName, toModelName(childName)));
                 }
             });
         }

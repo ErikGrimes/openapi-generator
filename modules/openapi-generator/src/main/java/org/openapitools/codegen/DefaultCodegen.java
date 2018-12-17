@@ -1726,7 +1726,7 @@ public class DefaultCodegen implements CodegenConfig {
         if (schema.getDiscriminator().getMapping() != null && !schema.getDiscriminator().getMapping().isEmpty()) {
             for (Entry<String, String> e : schema.getDiscriminator().getMapping().entrySet()) {
                 String name = ModelUtils.getSimpleRef(e.getValue());
-                discriminator.getMappedModels().add(new MappedModel(e.getKey(), toModelName(name)));
+                discriminator.getMappedModels().add(new MappedModel(e.getKey(), name != null ? toModelName(name) : null));
             }
         } else {
             allDefinitions.forEach((childName, child) -> {

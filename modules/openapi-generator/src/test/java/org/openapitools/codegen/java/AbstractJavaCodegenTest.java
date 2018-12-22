@@ -158,7 +158,7 @@ public class AbstractJavaCodegenTest {
 
     @Test
     public void testDiscriminatorWithUnderscoreInModelName(){
-        final OpenAPI openAPI = new OpenAPIParser().readLocation("src/test/resources/2_0/discriminatorWithUnderscoreInModelNameIssueTest.yaml", null, new ParseOptions()).getOpenAPI();
+        final OpenAPI openAPI = new OpenAPIParser().readLocation("src/test/resources/3_0/discriminatorWithUnderscoreInModelNameIssueTest.yaml", null, new ParseOptions()).getOpenAPI();
         AbstractJavaCodegen codegen = new P_AbstractJavaCodegen();
 
         Schema animal = openAPI.getComponents().getSchemas().get("Animal");
